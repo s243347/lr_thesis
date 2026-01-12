@@ -159,7 +159,11 @@ class MultiDimArray:
             self.__mapDims[1] = self.mapDims[0] + 1;
 
     def __load_data(self):
-        with open(self.__fname[0] + self.__fname[1], 'rb') as f:
+        data_path = self.__fname[0] + self.__fname[1]
+        # If no extension, try .mrspectra
+        if self.__fname[1] == '':
+            data_path = self.__fname[0] + '.mrspectra'
+        with open(data_path, 'rb') as f:
             buf = f.read()
         if len(buf) < 4 * np.prod(self.shape):
             print("Incomplete file, adding zeros to the end")

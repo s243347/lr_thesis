@@ -43,13 +43,13 @@ for y in range(mda.shape[0]):
         if mda.data[y, x, 0] < 16:
             signal = mda.data[y, x, :]
             plt.plot(wavenumbers, signal, label=f"Y={y}, X={x}")
-# %% Substract by polynomial approximation
+# %% Substract polynomial approximation
 import numpy as np
 
-def plot_polynomial_approximation(signal, degree):
+def pol_approx_subs(signal, degree):
     x = np.arange(len(signal))
     # Fit polynomial
-    if np.isnan(signal):
+    if np.any(np.isnan(signal)):
         valid_indices = np.where(~np.isnan(signal))[0]
         last_valid = valid_indices[-1]
         signal = signal[:last_valid + 1]
@@ -58,30 +58,37 @@ def plot_polynomial_approximation(signal, degree):
     poly_approx = np.polyval(coeffs, x)
     residual = signal - poly_approx
 
-    plt.figure(figsize=(12, 6))
-    plt.subplot(2, 1, 1)
-    plt.plot(x, signal, label='Original Signal')
-    plt.plot(x, poly_approx, label=f'Polynomial (deg={degree})', linestyle='--')
-    plt.legend()
-    plt.title('Signal and Polynomial Approximation')
+    return x, signal, poly_approx, residual
 
-    plt.subplot(2, 1, 2)
-    plt.plot(x, residual, label='Residual (Signal - Poly)')
-    plt.legend()
-    plt.title('Residual')
+degree = 3
+x, signal, poly_approx, residual = pol_approx_subs(signal, degree)   
+plt.figure(figsize=(12, 6))
+plt.subplot(2, 1, 1)
+plt.plot(x, signal, label='Original Signal')
+plt.plot(x, poly_approx, label=f'Polynomial (deg={degree})', linestyle='--')
+plt.legend()
+plt.title('Signal and Polynomial Approximation')
 
-    plt.tight_layout()
-    plt.show()
+plt.subplot(2, 1, 2)
+plt.plot(x, residual, label='Residual (Signal - Poly)')
+plt.legend()
+plt.title('Residual')
 
-plot_polynomial_approximation(mda.data[2, 2, :], degree=3)
-# %%
-signal = mda.data[2, 2, :]
-valid_indices = np.where(~np.isnan(signal))[0]
-last_valid = valid_indices[-1]
-trimmed_signal = signal[:last_valid + 1]
-trimmed_x = x[:last_valid + 1]
-coeffs = np.polyfit(trimmed_x, trimmed_signal, 2)
-poly_approx = np.polyval(coeffs, trimmed_x)
-plt.plot(trimmed_x, poly_approx)
-   
+plt.tight_layout()
+plt.show()
+
+# %% Plot all signals with polynomial subtracted
+plt.figure(figsize=(10, 6))
+for y in range(mda.shape[0]):
+    for x in range(mda.shape[1]):
+        if mda.data[y, x, 0] < 16:
+            signal = mda.data[y, x, :]
+            x = np.arange(len(signal))
+            x, signal, poly_approx, residual = pol_approx_subs(signal, degree = 3)  
+            plt.plot(x, residual, label=f"Y={y}, X={x}")
+
+plt.xlabel("Wavenumber (cm$^{-1}$)")
+plt.ylabel("Intensity")
+plt.title("All Signals E. coli w/ Poly Subtracted")
+plt.show()
 # %%

@@ -247,11 +247,34 @@ for i in np.arange(8):
 axs[0, 0].set_title("Raw Signal", fontsize=8)
 axs[0, 1].set_title(f"Whittaker Smoothing lam={lam}", fontsize=8)
 # %% Remove the low frequency noise
+from scipy.signal import butter, filtfilt
 
-lam = 1
-filt_rem = baseline_fitter.arpls(signal, lam=lam)[0]
+from scipy.signal import butter, filtfilt
+
+def lowpass_filter(signal, cutoff, fs, order=5):
+    nyq = 0.5 * fs
+    normal_cutoff = cutoff / nyq
+    b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    return filtfilt(b, a, signal)
+
+
+
+mda = MultiDimArray(filepath_ecoli)
+signal = mda.data[2, 3, :]
+x = np.arange(len(signal))
+if np.any(np.isnan(signal)):
+    valid_indices = np.where(~np.isnan(signal))[0]
+    last_valid = valid_indices[-1]
+    signal = signal[:last_valid + 1]
+    x = x[:last_valid + 1]
+
+
+# Example usage:
+filtered = lowpass_filter(signal, cutoff=0.05, fs=1)
+
 plt.figure()
-plt.plot(x, signal)
-plt.plot(x, filt_rem, label=f'lam=10$^{np.log10(lam):.0f}$')
+plt.plot(x, signal, label='Original Signal')
+plt.plot(x, filtered, label='Filtered Signal')
+plt.legend()
 
 # %% and make sure there ane no negative values

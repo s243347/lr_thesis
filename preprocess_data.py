@@ -11,6 +11,7 @@ filepath_assymptomatic_ecoli = "data_invitro_rats\\Assymptomatic_Ecoli\\Assympto
 filepath_protius = "data_invitro_rats\\Protius\\Protius_agar_plate_785nm"
 filepath_saprophyticus = "data_invitro_rats\\Ssaprofyticus\\ssaprofyticus_scan_785nm"
 # %% Preprocessing #01: Remove polynomial baseline
+
 def pol_approx_subs(signal, degree):
     x = np.arange(len(signal))
     # Fit polynomial
@@ -190,7 +191,7 @@ for mda in mdas:
             plt.subplot(4, 3, 3* (mdas.index(mda) + 1) - 1)
             plt.plot(x, residual, label=f"Y={y}, X={x}")
 
-            baseline_fitter = Baseline(signal)
+            baseline_fitter = Baseline(len(signal))
             bkg, params = baseline_fitter.modpoly(signal, poly_order=3)
             signal_corrected = signal - bkg
             plt.subplot(4, 3, 3* (mdas.index(mda) + 1) )
@@ -205,8 +206,46 @@ axs[0, 0].set_title("Raw Signal", fontsize=8)
 axs[0, 1].set_title("Manual Poynomial Substraction", fontsize=8)
 axs[0, 2].set_title("Pybaselines Baseline Substraction", fontsize=8)
 
+# %% Preprocessing #04: Whittaker smoothing 
 
+from pybaselines import Baseline
 
+lam = 1e4
+p = 0.01
+
+fig, axs = plt.subplots(4, 2) 
+plt.tight_layout()
+
+for mda in mdas:
+    for y in range(mda.shape[0]):
+        for x in range(mda.shape[1]):
+            signal = mda.data[y, x, :]
+            x = np.arange(len(signal))
+            if np.all(signal == 0) or np.any(signal > 30):
+                continue
+            if np.any(np.isnan(signal)):
+                valid_indices = np.where(~np.isnan(signal))[0]
+                last_valid = valid_indices[-1]
+                signal = signal[:last_valid + 1]
+                x = x[:last_valid + 1]
+
+            baseline_fitter = Baseline(x)
+            baseline, params = baseline_fitter.asls(signal, lam=lam, p=p)
+            signal_corrected = signal - baseline
+
+            plt.subplot(4, 2, 2* (mdas.index(mda)+ 1) - 1)
+            plt.plot(x, signal, label=f"Y={y}, X={x}")
+
+            plt.subplot(4, 2, 2* (mdas.index(mda)+ 1) )
+            plt.plot(x, signal_corrected, label=f"Y={y}, X={x}")
+
+for i in np.arange(8):
+    if i < 6 :
+        plt.subplot(4, 2, i+1)
+        plt.xticks([])
+
+axs[0, 0].set_title("Raw Signal", fontsize=8)
+axs[0, 1].set_title(f"Whittaker Smoothing lam={lam}", fontsize=8)
 # %% Remove the low frequency noise
 
 lam = 1
@@ -215,4 +254,4 @@ plt.figure()
 plt.plot(x, signal)
 plt.plot(x, filt_rem, label=f'lam=10$^{np.log10(lam):.0f}$')
 
-# %%
+# %% and make sure there ane no negative values

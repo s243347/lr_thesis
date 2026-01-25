@@ -1,0 +1,29 @@
+\section{Introduction}
+
+\subsection{Signal Preprocessing}
+\subsection{Whittaker Smoothing vs. Asymmetric Least Squares (AsLS) for Spectroscopy}
+
+\textbf{Whittaker smoothing} is a classic method for smoothing data, formulated as a minimization problem:
+\begin{equation*}
+	\min_z \sum_i (y_i - z_i)^2 + \lambda \sum_i (D^2 z_i)^2
+\end{equation*}
+where $y$ is the observed signal, $z$ is the smoothed signal, $D^2$ is the second difference operator, and
+ $\lambda$ controls the trade-off between fidelity to the data and smoothness. Whittaker smoothing is linear, 
+ treats positive and negative residuals equally (symmetric), and has a single trade-off parameter $\lambda$. 
+ The solution is closed-form.
+
+\textbf{Asymmetric Least Squares (AsLS)} modifies only the data fidelity term by introducing weights:
+\begin{equation*}
+	\min_z \sum_i w_i (y_i - z_i)^2 + \lambda \sum_i (D^2 z_i)^2
+\end{equation*}
+where $w_i = p$ if $y_i > z_i$ and $w_i = 1-p$ if $y_i < z_i$, with $p$ typically close to zero. The weights 
+depend on the current solution $z$, making the problem iterative and asymmetric. AsLS actively ignores peaks 
+by down-weighting positive residuals, focusing on fitting the lower envelope of the signal---ideal for baseline 
+removal in spectroscopy.
+
+In AsLS, $\lambda$ is typically chosen by heuristics (e.g., $\lambda \sim 10^4$--$10^8$ for spectroscopy) 
+and visual inspection. In summary, AsLS uses Whittaker as a subproblem but adds asymmetric, adaptive weighting,
+making it more suitable for baseline correction in spectroscopy.
+
+\subsection{Low-pass filter for smoothing}
+

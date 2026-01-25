@@ -1,6 +1,7 @@
 % report.tex
 % LaTeX report template
 \documentclass[12pt]{article}
+\usepackage[margin=0.7in]{geometry}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage{amsmath}
@@ -18,38 +19,7 @@
 Your abstract goes here.
 \end{abstract}
 
-\section{Introduction}
-\subsection{Whittaker Smoothing vs. Asymmetric Least Squares (AsLS) for Spectroscopy}
-
-\textbf{Whittaker smoothing} is a classic method for smoothing data, formulated as a minimization problem:
-\begin{equation*}
-	\min_z \sum_i (y_i - z_i)^2 + \lambda \sum_i (D^2 z_i)^2
-\end{equation*}
-where $y$ is the observed signal, $z$ is the smoothed signal, $D^2$ is the second difference operator, and $\lambda$ controls the trade-off between fidelity to the data and smoothness. Whittaker smoothing is linear, treats positive and negative residuals equally (symmetric), and has a single trade-off parameter $\lambda$. The solution is closed-form, and the bias--variance trade-off is easily visualized using the L-curve.
-
-\textbf{Asymmetric Least Squares (AsLS)} modifies only the data fidelity term by introducing weights:
-\begin{equation*}
-	\min_z \sum_i w_i (y_i - z_i)^2 + \lambda \sum_i (D^2 z_i)^2
-\end{equation*}
-where $w_i = p$ if $y_i > z_i$ and $w_i = 1-p$ if $y_i < z_i$, with $p$ typically close to zero. The weights depend on the current solution $z$, making the problem iterative and asymmetric. AsLS actively ignores peaks by down-weighting positive residuals, focusing on fitting the lower envelope of the signal---ideal for baseline removal in spectroscopy.
-
-\textbf{Key differences:}
-\begin{itemize}
-	\item \textit{Residual weighting:} Whittaker is symmetric; AsLS is asymmetric.
-	\item \textit{Solution:} Whittaker is solved in one shot; AsLS is iterative.
-	\item \textit{Interpretation:} Whittaker fits all data but penalizes wiggles; AsLS fits only the baseline, ignoring peaks.
-\end{itemize}
-
-\textbf{When to use which:}
-\begin{itemize}
-	\item \textit{Noise reduction or trend extraction:} Whittaker
-	\item \textit{Baseline removal in spectroscopy:} AsLS
-\end{itemize}
-
-For AsLS, $\lambda$ is typically chosen by heuristics (e.g., $\lambda \sim 10^4$--$10^8$ for spectroscopy) and visual inspection.In summary, AsLS is not simply Whittaker smoothing; it uses Whittaker as a subproblem but adds asymmetric, adaptive weighting, making it more suitable for baseline correction in spectroscopy.
-Write your introduction here.
-
-
+\input{report_sections/intro.tex}
 
 \section{Methods}
 Describe your methods here.

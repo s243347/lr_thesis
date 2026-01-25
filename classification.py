@@ -11,6 +11,20 @@ from sklearn.svm import SVC
 from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.metrics import classification_report, confusion_matrix
 from pybaselines import Baseline
+from scipy.signal import butter, filtfilt
+
+def lowpass_filter(signal, cutoff, fs, order=5):
+    nyq = 0.5 * fs
+    normal_cutoff = cutoff / nyq
+    b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    return filtfilt(b, a, signal)
+
+def minmax_normalize(signal):
+    min_val = np.min(signal)
+    max_val = np.max(signal)
+    if max_val == min_val:
+        return signal  # Avoid division by zero
+    return (signal - min_val) / (max_val - min_val)
 
 def preprocess_signals(data, threshold=30):
     """
@@ -35,8 +49,9 @@ def preprocess_signals(data, threshold=30):
             baseline_fitter = Baseline(np.arange(len(signal)))
             baseline, params = baseline_fitter.asls(signal, lam=lam, p=p)
             signal_corrected = signal - baseline
+            filtered = lowpass_filter(signal_corrected, cutoff=0.01, fs=1)
 
-            cleaned_signals.append(signal_corrected)
+            cleaned_signals.append(filtered)
             positions.append((y, x))
 
     return cleaned_signals, positions

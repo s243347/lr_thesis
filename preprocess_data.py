@@ -254,7 +254,6 @@ plt.legend()
 plt.tight_layout()
 plt.show()
 
- 
 # %%
 
 from pybaselines import Baseline
@@ -302,7 +301,38 @@ for i in np.arange(8):
 
 axs[0, 0].set_title("Raw Signal", fontsize=8)
 axs[0, 1].set_title(f"Whittaker Smoothing lam={lam}", fontsize=8)
-# %% Remove the low frequency noise
+# %% Apply low-pass filter on top of that 
+
+# Compute and plot mean PSD of all signals in E. coli dataset
+mda = MultiDimArray(filepath_assymptomatic_ecoli)
+psd_list = []
+for y in range(mda.shape[0]):
+    for x in range(mda.shape[1]):
+        signal = mda.data[y, x, :]
+        if np.any(np.isnan(signal)):
+            valid_indices = np.where(~np.isnan(signal))[0]
+            last_valid = valid_indices[-1]
+            signal = signal[:last_valid + 1]
+        x_d = signal - np.mean(signal)  # remove DC
+        X = np.fft.rfft(x_d)
+        P = np.abs(X)**2
+        psd_list.append(P)
+
+# Find common frequency axis (assuming all signals same length)
+f = np.fft.rfftfreq(len(x_d), d=1)  # d = Δν = 1 cm⁻¹
+psd_array = np.vstack(psd_list)
+mean_psd = np.mean(psd_array, axis=0)
+
+# Plot mean PSD
+plt.figure(figsize=(8, 4))
+plt.semilogy(f, mean_psd)
+plt.xlabel('Frequency [cm$^{-1}$]')
+plt.ylabel('Mean PSD [a.u.]')
+plt.title('Mean Power Spectral Density (Assymptomatic E. coli)')')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+# %%
 
 from scipy.signal import butter, filtfilt
 
@@ -315,7 +345,7 @@ def lowpass_filter(signal, cutoff, fs, order=5):
 
 
 mda = MultiDimArray(filepath_ecoli)
-signal = mda.data[2, 3, :]
+signal = mda.data[2, 8, :]
 x = np.arange(len(signal))
 if np.any(np.isnan(signal)):
     valid_indices = np.where(~np.isnan(signal))[0]
@@ -325,11 +355,78 @@ if np.any(np.isnan(signal)):
 
 
 # Example usage:
-filtered = lowpass_filter(signal, cutoff=0.05, fs=1)
+filtered = lowpass_filter(signal, cutoff=0.01, fs=1)
 
 plt.figure()
 plt.plot(x, signal, label='Original Signal')
 plt.plot(x, filtered, label='Filtered Signal')
 plt.legend()
 
-# %% and make sure there ane no negative values
+# %% Signal normalization
+
+def minmax_normalize(signal):
+    min_val = np.min(signal)
+    max_val = np.max(signal)
+    if max_val == min_val:
+        return signal  # Avoid division by zero
+    return (signal - min_val) / (max_val - min_val)
+
+
+mda_ecoli = MultiDimArray(filepath_ecoli)
+mda_assymptomatic_ecoli = MultiDimArray(filepath_assymptomatic_ecoli)
+mda_protius = MultiDimArray(filepath_protius)
+mda_saprophyticus = MultiDimArray(filepath_saprophyticus)
+
+mdas = mda_ecoli, mda_assymptomatic_ecoli, mda_protius, mda_saprophyticus
+
+for mda in mdas:
+    plt.figure(figsize=(10, 5))
+    for y in range(mda.shape[0]):
+        for x in range(mda.shape[1]):
+            signal = mda.data[y, x, :]
+            if np.all(signal == 0) or np.any(signal > 30):
+                continue
+            if np.any(np.isnan(signal)):
+                valid_indices = np.where(~np.isnan(signal))[0]
+                last_valid = valid_indices[-1]
+                signal = signal[:last_valid + 1]
+            
+                baseline_fitter = Baseline(np.arange(len(signal)))
+                baseline, params = baseline_fitter.asls(signal, lam=lam, p=p)
+                signal_corrected = signal - baseline
+                filtered = lowpass_filter(signal_corrected, cutoff=0.05, fs=1)
+                normalized = minmax_normalize(filtered)
+
+                plt.subplot(1,2,1)
+                plt.plot(np.arange(len(signal)), signal, label=f"Y={y}, X={x}")
+                baseline_fitter = Baseline(signal)
+                bkg, _ = baseline_fitter.modpoly(signal, poly_order=3)
+                #signal_corrected = signal - bkg
+                plt.subplot(1,2,2)
+                plt.plot(np.arange(len(normalized)), filtered, label=f"Y={y}, X={x}")
+# %%
+plt.figure(figsize=(6, 6))
+i = 0
+for mda in mdas:
+    i += 1
+    for y in range(mda.shape[0]):
+        for x in range(mda.shape[1]):
+            signal = mda.data[y, x, :]
+            if np.all(signal == 0) or np.any(signal > 30):
+                continue
+            if np.any(np.isnan(signal)):
+                valid_indices = np.where(~np.isnan(signal))[0]
+                last_valid = valid_indices[-1]
+                signal = signal[:last_valid + 1]
+            
+                baseline_fitter = Baseline(np.arange(len(signal)))
+                baseline, params = baseline_fitter.asls(signal, lam=lam, p=p)
+                signal_corrected = signal - baseline
+                filtered = lowpass_filter(signal_corrected, cutoff=0.05, fs=1)
+                normalized = minmax_normalize(filtered)
+
+                plt.subplot(4,1,i)
+                if i < 4:
+                    plt.xticks([])
+                plt.plot(np.arange(len(normalized)), signal, label=f"Y={y}, X={x}")
+# %%

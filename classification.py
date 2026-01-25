@@ -87,7 +87,7 @@ ax.set_xlabel('PC1')
 ax.set_ylabel('PC2')
 ax.set_zlabel('PC3')
 ax.legend()
-ax.set_title('PCA (3 Principal Components)')
+ax.set_title('PCA (6 Principal Components)')
 plt.show()
 # %%
 # Classification: SVM

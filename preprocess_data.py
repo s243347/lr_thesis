@@ -209,8 +209,64 @@ axs[0, 2].set_title("Pybaselines Baseline Substraction", fontsize=8)
 # %% Preprocessing #04: Whittaker smoothing 
 
 from pybaselines import Baseline
+mda_ecoli = MultiDimArray(filepath_ecoli)
+mda_assymptomatic_ecoli = MultiDimArray(filepath_assymptomatic_ecoli)
+mda_protius = MultiDimArray(filepath_protius)
+mda_saprophyticus = MultiDimArray(filepath_saprophyticus)
 
-lam = 1e4
+mdas = mda_ecoli, mda_assymptomatic_ecoli, mda_protius, mda_saprophyticus
+
+mda_names = ['E. coli', 'Assymptomatic E. coli', 'Protius', 'S. Saprofyticus']
+for mda in mdas:
+    avg_diffs_per_mda = []
+    for y in range(mda.shape[0]):
+        for x in range(mda.shape[1]):
+            signal = mda.data[y, x, :]
+            x = np.arange(len(signal))
+            if np.any(np.isnan(signal)):
+                valid_indices = np.where(~np.isnan(signal))[0]
+                last_valid = valid_indices[-1]
+                signal = signal[:last_valid + 1]
+                x = x[:last_valid + 1]
+            baseline_fitter = Baseline(x)
+            lams = np.logspace(3, 9, 10)
+            baselines = []
+            for lam in lams:
+                z, _ = baseline_fitter.asls(signal, lam=lam, p=0.01)
+                baselines.append(z)
+                diffs = [
+                    np.linalg.norm(baselines[i+1] - baselines[i]) / np.linalg.norm(baselines[i])
+                    for i in range(len(baselines)-1)
+                ]
+            avg_diffs_per_mda.append(diffs)
+
+    # Plot the average differences per mda
+plt.figure(figsize=(8, 6))
+for idx, diffs in enumerate(avg_diffs_per_mda):
+    avg = np.mean(diffs)
+    plt.plot(diffs, marker='o', label=f'{mda_names[idx]} (avg={avg:.2e})')
+    for i, diff in enumerate(diffs):
+        plt.annotate(f'{lams[i]:.1e}', (i, diff), textcoords="offset points", xytext=(0,5), ha='center', fontsize=7)
+plt.xlabel('Step')
+plt.ylabel('Relative Change')
+plt.title('Consecutive Baseline Changes per MDA\n(annotated with lowest $\\lambda$)')
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+ 
+# %%
+
+from pybaselines import Baseline
+
+mda_ecoli = MultiDimArray(filepath_ecoli)
+mda_assymptomatic_ecoli = MultiDimArray(filepath_assymptomatic_ecoli)
+mda_protius = MultiDimArray(filepath_protius)
+mda_saprophyticus = MultiDimArray(filepath_saprophyticus)
+
+mdas = mda_ecoli, mda_assymptomatic_ecoli, mda_protius, mda_saprophyticus
+
+lam = 1e6
 p = 0.01
 
 fig, axs = plt.subplots(4, 2) 
@@ -247,7 +303,6 @@ for i in np.arange(8):
 axs[0, 0].set_title("Raw Signal", fontsize=8)
 axs[0, 1].set_title(f"Whittaker Smoothing lam={lam}", fontsize=8)
 # %% Remove the low frequency noise
-from scipy.signal import butter, filtfilt
 
 from scipy.signal import butter, filtfilt
 

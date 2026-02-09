@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2024.3.15)  25 JAN 2026 12:16
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2024.3.15)  26 JAN 2026 12:21
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -370,21 +370,28 @@ Package hyperref Info: Link coloring OFF on input line 14.
 \@outlinefile=\write3
 \openout3 = `report.out'.
 
- (report_sections/intro.tex) [1
+ (report_sections/intro.tex [1
 
-{C:/Users/Usuario/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
+{C:/Users/Usuario/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}])
 No file report.bbl.
 [2] (report.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-04>
  ***********
-Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: 9E3A520B3BEEBCF499777D3C47323532;892.
+
+
+Package rerunfilecheck Warning: File `report.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `report.out':
+(rerunfilecheck)             Before: 9E3A520B3BEEBCF499777D3C47323532;892
+(rerunfilecheck)             After:  A4EF975D545CCDFB2417DE76102505B9;1339.
  ) 
 Here is how much of TeX's memory you used:
- 9584 strings out of 474486
- 148516 string characters out of 5742811
+ 9587 strings out of 474486
+ 148573 string characters out of 5742811
  1936542 words of memory out of 5000000
  31756 multiletter control sequences out of 15000+600000
  564970 words of font info for 60 fonts, out of 8000000 for 9000
@@ -401,10 +408,11 @@ ario/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:
 /Users/Usuario/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr
 17.pfb><C:/Users/Usuario/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfo
 nts/cm/cmr8.pfb><C:/Users/Usuario/AppData/Local/Programs/MiKTeX/fonts/type1/pub
-lic/amsfonts/cm/cmsy10.pfb>
-Output written on report.pdf (2 pages, 121372 bytes).
+lic/amsfonts/cm/cmsy10.pfb><C:/Users/Usuario/AppData/Local/Programs/MiKTeX/font
+s/type1/public/amsfonts/cm/cmsy8.pfb>
+Output written on report.pdf (2 pages, 135659 bytes).
 PDF statistics:
- 92 PDF objects out of 1000 (max. 8388607)
- 9 named destinations out of 1000 (max. 500000)
+ 100 PDF objects out of 1000 (max. 8388607)
+ 12 named destinations out of 1000 (max. 500000)
  49 words of extra memory for PDF output out of 10000 (max. 10000000)
 

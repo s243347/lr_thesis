@@ -1,16 +1,16 @@
 \section{Introduction}
 
 \subsection{Signal Preprocessing}
-\subsection{Whittaker Smoothing vs. Asymmetric Least Squares (AsLS) for Spectroscopy}
+\subsubsection{Whittaker Smoothing vs. Asymmetric Least Squares (AsLS) for Spectroscopy}
 
 \textbf{Whittaker smoothing} is a classic method for smoothing data, formulated as a minimization problem:
 \begin{equation*}
 	\min_z \sum_i (y_i - z_i)^2 + \lambda \sum_i (D^2 z_i)^2
 \end{equation*}
-where $y$ is the observed signal, $z$ is the smoothed signal, $D^2$ is the second difference operator, and
- $\lambda$ controls the trade-off between fidelity to the data and smoothness. Whittaker smoothing is linear, 
- treats positive and negative residuals equally (symmetric), and has a single trade-off parameter $\lambda$. 
- The solution is closed-form.
+where $y$ is the observed signal, $z$ is the smoothed signal and $D^2$ is the second difference operator. The 
+first term is the data fit, adnd the second represents the penalty for non-smooth signals. $\lambda$ balances
+ the 2 terms. Whittaker smoothing is linear, treats positive and negative residuals equally (symmetric), and 
+ has a single trade-off parameter $\lambda$. The solution is closed-form.
 
 \textbf{Asymmetric Least Squares (AsLS)} modifies only the data fidelity term by introducing weights:
 \begin{equation*}
@@ -25,5 +25,23 @@ In AsLS, $\lambda$ is typically chosen by heuristics (e.g., $\lambda \sim 10^4$-
 and visual inspection. In summary, AsLS uses Whittaker as a subproblem but adds asymmetric, adaptive weighting,
 making it more suitable for baseline correction in spectroscopy.
 
-\subsection{Low-pass filter for smoothing}
+\subsubsection{Low-pass filter}
+
+For removing high-frequency noise from Raman spectra, a Butterworth low-pass filter is used. 
+
+\subsubsection{Normalization}
+
+Min-max normalization rescales every spectrum to the same range, typically [0, 1], using the formula:
+\begin{equation*}
+	x' = \frac{x - x_{min}}{x_{max} - x_{min}}		
+\end{equation*}
+where $x$ is the original value, $x_{min}$ and $x_{max}$ are the minimum and maximum values of the spectrum,
+ and $x'$ is the normalized value.
+
+However, in Raman, peak intensity carries chemical information. Thus, using min-max normalization amplifies 
+noise and baselinea artifacts. Instead, standard normalization (z-score normalization) is preferred:
+
+\begin{equation*}
+	x' = \frac{x - \mu}{\sigma}
+\end{equation*}
 
